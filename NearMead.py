@@ -37,9 +37,9 @@ comm.Gather(node_fitness, fitness, root=0)
 
 for i in range(iterations):
 	if rank ==0:
-		fitness_sort = np.argsort(fitrness)
-		pop_median = np.mean(pop[fitness_sort[:pop_sel]],axis).astype(np.float32)
-		po_std = np.std(pop[fitness_sort[:pop_sel]],axis).astype(np.float32)
+		fitness_sort = np.argsort(fitness)
+		pop_median = np.mean(pop[fitness_sort[:pop_sel]]).astype(np.float32)
+		po_std = np.std(pop[fitness_sort[:pop_sel]]).astype(np.float32)
 	else:
 		pop_median = np.zeros((dim), dtype=np.float32)
 		pop_std = np.zeros((dim), dtype=np.float32)

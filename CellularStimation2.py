@@ -23,3 +23,4 @@ while t <  max_iteraciones:
         new_population.extend(new_individuals)
     poblacion = np.array(new_population)
     t += 1
+print(poblacion)
