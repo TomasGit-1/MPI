@@ -1,78 +1,106 @@
-from mpi4py import MPI
 import numpy as np
+from mpi4py import MPI
 import sys
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-def estimate_gaussian(selected_individuals):
-    mean = np.mean(selected_individuals)
-    std = np.std(selected_individuals)
-    return mean, std
+comm.Set_errhandler(MPI.ERRORS_RETURN)
+
+def getNeighborhood(masterNodo,sizeM):
+    sizeM = int((sizeM/2))
+    matrizNodos= np.arange(0, sizeM**2).reshape(sizeM,sizeM)
+    # print(matrizNodos)
+    coordenadas = np.where(matrizNodos == masterNodo)
+    coordenadas = list(zip(coordenadas[0], coordenadas[1]))
+    fila = matrizNodos[coordenadas[0][0],:]
+    columna = matrizNodos[:,coordenadas[0][1]]
+    neighborhood = np.union1d(fila, columna)
+    neighborhood = np.delete(neighborhood, np.where(neighborhood == masterNodo))
+    return {masterNodo:neighborhood}
 
 def sphere(x):
-	return np.sum(x**2, axis=1).astype(np.float32)
+    return np.sum(x**2, axis=1).astype(np.float32)
 
-pop_size = 10
-try:
-	pop_size = int(sys.argv[1])//size
-except:
-	pass
+def elegirIndicesMejores(M, node_fitness): 
+    #Obtenemos los indices de M
+    return np.argsort(node_fitness)[-M:]
 
 funcion = sphere
+li, ls = -10, 10
+dim = 2
+pop_size = 5
+max_iteraciones = 2
+t = 1
+SizeOf_cell = 2
+neighborhood = getNeighborhood(rank,size)
+SizeOf_Neighborhood  = neighborhood[rank].shape[0]
 
-N = 5
-li = -10
-ls = 10
-# poblacion = np.random.uniform(li, ls, size=(pop_size, 2)).astype(np.float32)
-# poblacion_fitness = funcion(poblacion)
-# print(f"Nodo {poblacion}")
-# print(f"Fitness {poblacion_fitness}")
+# print(f"Estamos en rankclea {rank}")
+# print(f"Estos son los vecinos {neighborhood} Size {neighborhood_size}")
 
-if rank == 0:
-    poblacion = np.random.rand(N)  # Población inicial aleatoria
-    # poblacion = np.random.uniform(li, ls, size=(pop_size, 2)).astype(np.float32)
-    # poblacion = np.random.uniform(li, ls,N).astype(np.float32)
-else:
-    poblacion = None
+#Genereamos la poblacion aleatoria para cada nodo y Evaluamos la funcion objectivo
+node_pop = np.random.uniform(li, ls, size=(pop_size, dim)).astype(np.float32)
+node_fitness = funcion(node_pop)
 
-#bcast transmite la misma poblacion a todo
-poblacion = comm.bcast(poblacion, root=0)
-# poblacion = comm.bcast(poblacion_fitness, root=0)
-poblacion_local = poblacion
-max_iteraciones = 1
-tam_cell = 5
-neighborhood_size = 2
-t = 0
+pop = None
+fitness = None
+# print(neighborhood.keys())
+if rank==0:
+    pop = np.zeros((pop_size*size, dim), dtype=np.float32)
+    fitness = np.zeros((pop_size*size), dtype=np.float32)
 
-while t < max_iteraciones:
-    new_population_local = []
-    #Esto lo hara en cada uno de los Nodos
-    for i in range(0, len(poblacion_local), tam_cell):
-        fitness_sort = np.argsort(poblacion_local)
-        cell = poblacion_local[i:i+tam_cell]
-        M = min(neighborhood_size * tam_cell, len(cell))
-        selected_individuals = np.random.choice(cell, M)
-        mean, std = estimate_gaussian(selected_individuals)
-        new_individuals = np.random.normal(mean, std, len(cell))
-        new_population_local.extend(new_individuals)
-    # print(f"Rank {rank}")
-    # print(new_population_local)
 
-    #Recopilamos en el nodo 0
-    new_population = comm.gather(new_population_local, root=0)
+while t <  max_iteraciones:
+    #Enviamos de mi rank actual , los mejores elementosa sus vecionos
+    # if rank == neighborhood[rank]:
+    for target in neighborhood[rank]:
+        print(f"Estamos en rank {rank} Con vecinos {neighborhood[rank]}  Enviando a ... {target}" )
+        """
+            Aqui tenemos que elegir los M Mejores
+        """
+        mejores = elegirIndicesMejores(2,node_fitness)
+        comm.Send([node_pop[mejores], MPI.FLOAT], dest=target, tag=rank)
+        comm.Send([node_fitness[[mejores]], MPI.FLOAT], dest=target, tag=rank + size)
+
+    for source in neighborhood[rank]:
+        print(f"Estamos en rank {rank} Con vecinos {neighborhood[rank]}  Recibiendo en  ... {source}" )
+        #Generamos la poblacions local
+        node_pop_local = np.random.uniform(li, ls, size=(pop_size, dim)).astype(np.float32)
+        node_fitness_local = funcion(node_pop_local)
+
+        #TEnsmo que crear un array para recibir los datos
+        node_pop_visitante = np.empty((pop_size, dim), dtype=np.float32)
+        node_fitness_visitante = np.empty(pop_size, dtype=np.float32) 
+
+        comm.Recv([node_pop_visitante, MPI.FLOAT], source=source, tag=source)
+        comm.Recv([node_fitness_visitante, MPI.FLOAT], source=source, tag=source + size)
+
+        node_fitness_visitante = funcion(node_pop_visitante)
+
+        #Mensaliamo los vecionos recibidos u los locales 
+        node_full = np.concatenate((node_pop_local, node_pop_visitante), axis=0)
+        node_fitness_full = np.concatenate((node_fitness_local, node_fitness_visitante), axis=0)
+        #Seleccionamos los mejores 
+        mejores = elegirIndicesMejores(2,node_fitness)
+
+        pop_median = np.mean(node_full[mejores], axis=0).astype(np.float32)
+        pop_std = np.std(node_fitness_full[mejores], axis=0).astype(np.float32)
+        
+        node_pop = np.random.normal(pop_median, pop_std, size=(pop_size, dim)).astype(np.float32)
+        node_fitness = funcion(node_pop)
+
+        comm.Send([node_pop, MPI.FLOAT], dest=0, tag=rank)
+        comm.Send([node_fitness, MPI.FLOAT], dest=0, tag=rank)
+
+    comm.Gather(node_pop, pop, root=0)
+    comm.Gather(node_fitness, fitness, root=0)
 
     if rank == 0:
-        print(3*"-------")
-        # node_fitness = funcion(new_population[0])
-        # new_population = np.concatenate(new_population)
-        # node_fitness = funcion(node_pop)
-        print(new_population[0])
+        print("En el nodo 0 Obtenemos todos")
+        print(pop)
+        print(fitness)
 
-    else:
-        new_population = None
-    poblacion_local = comm.scatter(new_population[0], root=0)
-    print(poblacion_local)
+    t +=1
 
-    t += 1
