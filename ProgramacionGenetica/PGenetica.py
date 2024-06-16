@@ -23,7 +23,6 @@ class PGenetica:
         i=0
         while i < poblacionSize:
             Tree = self.objTree.build(profundidad)
-            print(i)
             expresion,y_predict,mse,isValida = self.generateInfo(Tree)
             poblacion.append({"tree":Tree, "expresion":expresion,"y_predict":y_predict,"mse":mse, "isValida":isValida})
             i+=1
