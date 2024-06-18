@@ -152,11 +152,12 @@ class PGenetica:
                     elMejor =self.generateMuta(elMejor)   
                     newGeneracion.append({"tree":elMejor, "expresion":expresion,"y_predict":y_predict,"mse":mse,"isValida":isValida})
                 except Exception as e:
+                    continue
                     print("Error en generateGeneration: " + str(e) + str(i))
             newGeneracion = sorted(newGeneracion, key=lambda x: x['mse'] if x['mse'] is not None else float('inf'))
             return newGeneracion
         except Exception as e:
-            print("Error en generateGeneration: " + str(e))
+            # print("Error en generateGeneration: " + str(e))
             return newGeneracion
 
     def seleccionNode(self,seleccionTree):
@@ -166,7 +167,7 @@ class PGenetica:
             opcion = (randomOPcion, seleccionTree[randomOPcion])
             return opcion
         except Exception as e:
-            print(f"Error seleccionNode {e}")
+            # print(f"Error seleccionNode {e}")
             return None
     
 
@@ -198,7 +199,7 @@ class PGenetica:
             mutaTree[nodeS[0]].value = nuevoValue
             return mutaTree
         except Exception as e:
-            print("Error en generar muta: " + str(e))
+            # print("Error en generar muta: " + str(e))
             return mutaTree
     
     def validarTipo(self, valueN1, valueN2):

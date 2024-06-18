@@ -1,6 +1,5 @@
 from PGenetica import PGenetica
 from binarytree import Node,build
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
