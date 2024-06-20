@@ -3,35 +3,25 @@ import random
 import math
 
 class TreeC:
-    def __init__(self, limite=100):
-        self.limite = limite
-        self.operadores = ['+', '-', '*', '/']
-        self.funciones = ['sin', 'cos']
+    def __init__(self,operators=[],functions=[]):
+        self.operadores = operators
+        self.funciones = functions
         
     def build(self, profundidad_maxima):
         if profundidad_maxima == 0:
-            # Cuando llegamos a la profundidad máxima, creamos una hoja con un número aleatorio
             return Node(random.choice([str(1), 'X']))
         else:
-            # En niveles internos, seleccionamos un operador o función trigonométrica
-            # raiz = Node(random.choice(['+', '-', '*', '/', 'sin', 'cos','log']))
-            # if raiz.value in ['sin', 'cos', 'tan', 'log']:
-            #     # raiz.left = None
-            #     raiz.right = self.build(profundidad_maxima - 1)
-            # else:
-            #     raiz.left = self.build(profundidad_maxima - 1)
-            #     raiz.right = self.build(profundidad_maxima - 1)
-              # En niveles internos, la raíz será siempre un operador
             raiz = Node(random.choice(self.operadores))
             raiz.left = self.build(profundidad_maxima - 1)
-            if random.random() < 0.5:  # 50% de probabilidad de elegir un operador
+            if random.random() < 0.5:  
+                # 50% de probabilidad de elegir un operador
                 raiz = Node(random.choice(self.operadores))
                 raiz.left = self.build(profundidad_maxima - 1)
                 raiz.right = self.build(profundidad_maxima - 1)
-            else:  # 50% de probabilidad de elegir una función
+            else:  
+                # Solo un hijo para las funciones unarias
                 raiz = Node(random.choice( self.funciones))
-                raiz.right = self.build(profundidad_maxima - 1)  # Solo un hijo para las funciones unarias
-        
+                raiz.right = self.build(profundidad_maxima - 1)  
             return raiz
     
     def generateExpressionV2(self,tree):
@@ -44,15 +34,13 @@ class TreeC:
             
             expresion_izquierda = self.generateExpressionV2(tree.left)
             expresion_derecha = self.generateExpressionV2(tree.right)
-            
-            if tree.value in ('+', '-', '*', '/'):
+            if tree.value in self.operadores:
                 expresion_actual = '(' + str(expresion_izquierda) + tree.value + str(expresion_derecha) + ')'
                 return expresion_actual
-            elif tree.value.lower() in ('sin', 'cos', 'tan','log'):
+            elif tree.value.lower() in self.funciones:
                 expresion_actual = tree.value.lower() + '(' + expresion_derecha + ')'
                 return expresion_actual
             else:
-                # Operador no válido, puede ser extendido si hay más operadores
                 return ""
         except Exception as e:
             print("Error: {}".format(e))

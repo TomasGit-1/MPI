@@ -1,26 +1,32 @@
+from  utils import saveData, graficar, generateObjectivo, pintar
 from PGenetica import PGenetica
-from binarytree import Node,build
 import numpy as np
+import random
 import pandas as pd
+sizePoblacion = 100
+limiteGeneraciones = 10
 
-# Generar datos de entrada (X)
-np.random.seed(42)
-X = np.linspace(1, 2 * np.pi, 100)
-# Añadir ruido a los datos3
-y = np.sin(X) + np.random.normal(0, 0.1, X.shape)
+X, y = generateObjectivo()
 
-objGenetica = PGenetica(X,y,limite=200)
-poblacion = objGenetica.generatePoblacionAleatoria(poblacionSize=100,profundidad=4)
-print("Primera geneacion")
+operators = ["+", "-", "*", "/","**"]
+functions = ["sin", "cos"] #,"log"
 
-for i in range(10):
+objGenetica = PGenetica(X, y,operators,functions )
+poblacion = objGenetica.generatePoblacionAleatoria(poblacionSize=sizePoblacion, profundidad=4)
+saveData(poblacion,"Inicial")
+
+for i in range(limiteGeneraciones):
     antiguaGeneracion = poblacion
     NuevaGeneracion =objGenetica.generateGeneration(antiguaGeneracion)
     """
         Tomamso los mejores 50% de la Antigua Generacion y los 50% mejores de la nmueva generaion
     """
     poblacion = antiguaGeneracion[len(antiguaGeneracion)//2:] + NuevaGeneracion[len(NuevaGeneracion)//2:]
+    print(len(poblacion))
+    poblacion = sorted(poblacion, key=lambda x: x['mse'] if x['mse'] is not None else float('inf'))
 
-# Convertir la lista de diccionarios a DataFrame
 df = pd.DataFrame(poblacion)
-df.to_csv("poblacion.csv")
+y_predict = [poblacion[i]['y_predict'] for i in range(len(poblacion[:5]))]
+
+saveData(poblacion,"Final") 
+pintar(X,y,y_predict,f"Final_{1}")

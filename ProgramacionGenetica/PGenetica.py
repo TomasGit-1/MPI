@@ -6,18 +6,17 @@ import random
 import copy
 import math
 np.seterr(divide='ignore', invalid='ignore')
-class PGenetica:
 
-    def __init__(self,X_true,y_true,limite):
+class PGenetica:
+    def __init__(self,X_true,y_true, operators=[],functions=[]):
         print("Programacion Genetica")
-        self.operators = ["+", "-", "*", "/"]
+        self.operators = operators
         self.variables = ["X"]
-        self.functions = ["sin", "cos", "tan","log"]
-        # self.constants = [str(random.randint(1, 10)) for _ in range(10)]
+        self.functions = functions
         self.constants = [1]
         self.X_true = X_true
         self.y_true = y_true
-        self.objTree = TreeC(limite)
+        self.objTree = TreeC(self.operators, self.functions)
 
     def generatePoblacionAleatoria(self, poblacionSize = 4, profundidad=4):
         poblacion = []
@@ -214,14 +213,11 @@ class PGenetica:
         if valueN1 == valueN2:
             return True
         return True
-    
-    
+
     def evaluar_expresion(self, expresion,X):
         try:
             return round(eval(expresion, {'sin': math.sin, 'cos': math.cos, 'tan': math.tan,"X": X , 'log' :math.log}),4 )
         except ZeroDivisionError:
-            # print("Error: ZeroDivisionError")
             return None
         except Exception as e:
-            # print("Error: Expresión inválida")
             return None

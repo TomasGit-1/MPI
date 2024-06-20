@@ -4,20 +4,28 @@ from mpi4py import MPI
 import numpy as np
 import random
 
+import logging
+# logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
 sizePoblacion = 100
 limiteGeneraciones = 10
-X, y = generateObjectivo()
 
-objGenetica = PGenetica(X, y, limite=1)
+X = None
+y = None
+objGenetica = None
+X, y = generateObjectivo()
+operators = ["+", "-", "*", "/","**"]
+functions = ["sin", "cos", "tan","log"]
+objGenetica = PGenetica(X, y,operators,functions )
 
 if rank == 0:
-    # graficar(X,y,"inicial")
+    # logging.debug('Iniciamos generando la funcion objectivo')
     poblacion = objGenetica.generatePoblacionAleatoria(poblacionSize=sizePoblacion, profundidad=4)
-    # saveData(poblacion,"Inicial")
+    saveData(poblacion,"Inicial")
 else:
     poblacion = None
 
@@ -26,7 +34,7 @@ if rank == 0:
 else:
     sub_poblaciones = None
 
-#Recinimos la informacion
+#Enviamos y recibimos la informacion
 sub_poblacion = comm.scatter(sub_poblaciones, root=0)
     
 for i in range(limiteGeneraciones):
