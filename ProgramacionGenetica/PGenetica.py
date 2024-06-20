@@ -5,6 +5,7 @@ import numpy as np
 import random
 import copy
 import math
+np.seterr(divide='ignore', invalid='ignore')
 class PGenetica:
 
     def __init__(self,X_true,y_true,limite):
@@ -12,11 +13,11 @@ class PGenetica:
         self.operators = ["+", "-", "*", "/"]
         self.variables = ["X"]
         self.functions = ["sin", "cos", "tan","log"]
-        self.constants = [str(random.randint(1, 10)) for _ in range(10)]
+        # self.constants = [str(random.randint(1, 10)) for _ in range(10)]
+        self.constants = [1]
         self.X_true = X_true
         self.y_true = y_true
         self.objTree = TreeC(limite)
-
 
     def generatePoblacionAleatoria(self, poblacionSize = 4, profundidad=4):
         poblacion = []

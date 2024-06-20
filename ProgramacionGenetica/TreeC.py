@@ -11,7 +11,7 @@ class TreeC:
     def build(self, profundidad_maxima):
         if profundidad_maxima == 0:
             # Cuando llegamos a la profundidad máxima, creamos una hoja con un número aleatorio
-            return Node(random.choice([str(random.randint(1, self.limite)), 'X']))
+            return Node(random.choice([str(1), 'X']))
         else:
             # En niveles internos, seleccionamos un operador o función trigonométrica
             # raiz = Node(random.choice(['+', '-', '*', '/', 'sin', 'cos','log']))
