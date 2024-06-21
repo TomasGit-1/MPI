@@ -26,7 +26,8 @@ class PGenetica:
             expresion,y_predict,mse,isValida = self.generateInfo(Tree)
             poblacion.append({"tree":Tree, "expresion":expresion,"y_predict":y_predict,"mse":mse, "isValida":isValida})
             i+=1
-        poblacion = sorted(poblacion, key=lambda x: x['mse'] if x['mse'] is not None else float('inf'))
+        poblacion = sorted(poblacion, key=lambda x: np.inf if x['mse'] is None or np.isnan(x['mse']) else x['mse'])
+        # poblacion = sorted(poblacion, key=lambda x: x['mse'] )
         return poblacion
     
     def generateInfo(self, Tree):
@@ -72,7 +73,19 @@ class PGenetica:
         return expression
     
     def calcular_ecm(expresion, y_true,y_pred):
-        return  round( np.mean((y_true - y_pred) ** 2),4)
+        try:
+            valid_pares = [(true, pred) for true, pred in zip(y_true, y_pred) if true is not None and pred is not None]
+        
+        # Desempaquetar los pares válidos en arreglos NumPy
+            y_true = np.array([true for true, pred in valid_pares])
+            y_pred = np.array([pred for true, pred in valid_pares])
+        
+            # y_true = np.array(y_true)
+            # y_pred = np.array(y_pred)
+            return  round( np.mean((y_true - y_pred) ** 2),4)
+        except Exception as e:
+            print("Error calcular_ecm" + str(e))
+            return -1
     
     def MSE(y, y_):
         try:
@@ -84,6 +97,14 @@ class PGenetica:
         except Exception as e:
             print("Error MSE" + str(e))
             return -1
+    def seleccionarPadre(self,posiblePadres,poblacion):
+        seleccion = random.randint(0, len(posiblePadres)-1)
+        padres = posiblePadres[seleccion]
+        #Realizando la cruza
+    
+        p1 = poblacion[padres[0]]
+        p2 = poblacion[padres[1]]
+        return p1,p2
     
     def generateGeneration(self,poblacion):
         newGeneracion = []
@@ -95,27 +116,35 @@ class PGenetica:
             for i in range(len(poblacion)):
                 try:
                     posiblePadres = [j for j in combinacion if i not in j]
-                    seleccion = random.randint(0, len(posiblePadres)-1)
-                    padres = posiblePadres[seleccion]
-
-                    #Realizando la cruza
-                    p1 = poblacion[padres[0]]
-                    p2 = poblacion[padres[1]]
-                    
+                    # seleccion = random.randint(0, len(posiblePadres)-1)
+                    # padres = posiblePadres[seleccion]
+                    # #Realizando la cruza
+                    # p1 = poblacion[padres[0]]
+                    # p2 = poblacion[padres[1]]
+                    p1, p2 = self.seleccionarPadre(posiblePadres,poblacion)
                     #Aqui valido si la cruza se realiza sobre los mismos tipos de nodods
-                    
                     hijo1 = copy.deepcopy(p1["tree"])
                     hijo2 = copy.deepcopy(p2["tree"])
                     node1 = None
                     node2 = None
                     isTypeEquals = True
-
+                    iteracionesB = 0
                     while isTypeEquals:
+                        # print(f"Buscando Nodos Iguales {iteracionesB}")
                         node1 = self.seleccionNode(hijo1)
                         node2 = self.seleccionNode(hijo2)
                         isTypeEquals = True
+                        # if iteracionesB <20:
+                        #     print("Limite superado eleccion de nuevos padres")
+                        #     p1, p2 = self.seleccionarPadre(posiblePadres,poblacion)
+                        #     #Aqui valido si la cruza se realiza sobre los mismos tipos de nodods
+                        #     hijo1 = copy.deepcopy(p1["tree"])
+                        #     hijo2 = copy.deepcopy(p2["tree"])
+                        #     iteracionesB = 0
+                        iteracionesB += 1
                         if node1 != None and node2 != None:
                             isTypeEquals = self.validarTipo(node1[1].value,node2[1].value)
+                            
 
                     """Realizando la cruza"""
                     try:
@@ -154,7 +183,9 @@ class PGenetica:
                 except Exception as e:
                     continue
                     print("Error en generateGeneration: " + str(e) + str(i))
-            newGeneracion = sorted(newGeneracion, key=lambda x: x['mse'] if x['mse'] is not None else float('inf'))
+            newGeneracion = sorted(newGeneracion, key=lambda x: np.inf if x['mse'] is None or np.isnan(x['mse']) else x['mse'])
+
+            # newGeneracion = sorted(newGeneracion, key=lambda x: x['mse'] if x['mse'] is not None else float('inf'))
             return newGeneracion
         except Exception as e:
             # print("Error en generateGeneration: " + str(e))
@@ -169,8 +200,7 @@ class PGenetica:
         except Exception as e:
             # print(f"Error seleccionNode {e}")
             return None
-    
-
+        
     def generateMuta(self,Tree):
         try:
             # print("Iniciamos la Muta Este es el mejor")
@@ -186,7 +216,7 @@ class PGenetica:
             temp = None        
             #Verficamos si esl valor es un numero un operador o una funcion
             if value.isdigit():
-                temp = [str(numero) for numero in range(10) if str(numero) != value]
+                temp = ["1","1"]
             elif value in self.operators:
                 temp = self.operators
             elif value in self.functions:
@@ -218,6 +248,6 @@ class PGenetica:
         try:
             return round(eval(expresion, {'sin': math.sin, 'cos': math.cos, 'tan': math.tan,"X": X , 'log' :math.log}),4 )
         except ZeroDivisionError:
-            return None
+            return 0
         except Exception as e:
-            return None
+            return 0

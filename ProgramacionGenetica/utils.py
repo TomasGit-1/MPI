@@ -12,7 +12,7 @@ def saveData(poblacion,name):
     timeNow = datetime.datetime.now()
     numero_aleatorio = random.randint(0, 100)
     # now = timeNow.strftime('%H_%M_%SS')
-    df.to_csv(f"poblaciones/Poblacion_{name}_{numero_aleatorio}.csv")
+    df.to_csv(f"poblaciones/Poblacion_{name}.csv")
 
 def graficar(X,y,name, expresion):
     plt.figure(figsize=(10, 6))
@@ -29,7 +29,6 @@ def pintar(X,y,y_,name):
     plt.figure(figsize=(10, 6))
     plt.plot(X,y, label='Funcion objectivo', color='r')
     for i, (y, color) in enumerate(zip(y_, colors)):
-        print(i)
         plt.plot(X, y, linestyle='-', color=color)
     plt.title('Gráfico de varias listas en el eje y con colores aleatorios')
     plt.xlabel('x')
@@ -40,34 +39,40 @@ def pintar(X,y,y_,name):
 
 def funciones():
     regressionFunctions = {
-        "f1":{"fx":"X**3+X**2+X","fitCases":np.linspace(-1, 1, 20)},
-        "f2":{"fx":"X**4+X**3+X**2+X","fitCases":np.linspace(-1, 1, 20)},
-        "f3":{"fx":"X**5+X**4+X**3+X**2+X","fitCases":np.linspace(-1, 1, 20)},
-        "f4":{"fx":"X**6+X**5+X**4+X**3+X**2+X","fitCases":np.linspace(-1, 1, 20)},
-        "f5":{"fx":"sin(X**2)*cos(X)-1","fitCases":np.linspace(-1, 1, 20)},
-        "f6":{"fx":"sin(X)+sin(X+X**2)","fitCases":np.linspace(-1, 1, 20)},
+        "f1":{"fx":"X**3+X**2+X","fitCases":np.linspace(0, 10, 20)},
+        "f2":{"fx":"X**4+X**3+X**2+X","fitCases":np.linspace(0, 10, 20)},
+        "f3":{"fx":"X**5+X**4+X**3+X**2+X","fitCases":np.linspace(0, 1, 20)},
+        "f4":{"fx":"X**6+X**5+X**4+X**3+X**2+X","fitCases":np.linspace(0, 1, 20)},
+        "f5":{"fx":"sin(X**2)*cos(X)-1","fitCases":np.linspace(0, 1, 20)},
+        "f6":{"fx":"sin(X)+sin(X+X**2)","fitCases":np.linspace(0, 1, 20)},
         "f7":{"fx":"log(X+1)+log(X**2 +1)","fitCases":np.linspace(0, 2, 20)},
     }
     return  regressionFunctions
 
 def evaluar_expresion(expresion,X):
-        try:
-            return round(eval(expresion, {'sin': math.sin, 'cos': math.cos, 'tan': math.tan,"X": X , 'log' :math.log}),4 )
-        except ZeroDivisionError:
-            return None
-        except Exception as e:
-            return None
-        
-def generateObjectivo():
-    np.random.seed(42)
-    fxs = funciones()
-    # for i in fxs.keys():
-    i = f"f{np.random.randint(1,6)}"
-    X = fxs["f5"]["fitCases"]
-    y  = [ (evaluar_expresion(fxs[i]["fx"], x)) for x in X ]
-    #Normalizamos y entre 0 y 1
-    y = [(valor -  min(y)) / ( max(y) - min(y)) for valor in y]
+    try:
+        return round(eval(expresion, {'sin': math.sin, 'cos': math.cos, 'tan': math.tan,"X": X , 'log' :math.log}),4 )
+    except ZeroDivisionError:
+        return 0
+    except Exception as e:
+        return 0
 
-    graficar(X,y,i,fxs[i]["fx"])
-    return X, y, 
+def normalize_list(lista):
+    valores_validos = [valor for valor in lista if valor is not None]
+    minimo = min(lista)
+    maximo = max(lista)
+    return [(x - minimo) / (maximo - minimo) if (maximo - minimo) != 0 else 0 for x in lista]   
+   
+
+def generateObjectivo():
+    # np.random.seed(42)
+    fxs = funciones()
+    i = f"f{np.random.randint(1,6)}"
+    X = np.linspace(-1, 1, 20)
+    y  = [ (evaluar_expresion(fxs[i]["fx"], x)) for x in X ]
+    # y = np.sin(X) + np.random.normal(0, 0.1, X.shape)
+    minimo = min(y)
+    maximo = max(y)
+    # y = [(x - minimo) / (maximo - minimo) for x in y]
+    return X, y, fxs[i]["fx"]
 

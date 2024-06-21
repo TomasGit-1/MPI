@@ -17,12 +17,14 @@ limiteGeneraciones = 10
 X = None
 y = None
 objGenetica = None
-X, y = generateObjectivo()
+X, y,fxs = generateObjectivo()
 operators = ["+", "-", "*", "/","**"]
 functions = ["sin", "cos", "tan","log"]
 objGenetica = PGenetica(X, y,operators,functions )
-
+value = 0
 if rank == 0:
+    value = np.random.randint(0, 200)
+
     # logging.debug('Iniciamos generando la funcion objectivo')
     poblacion = objGenetica.generatePoblacionAleatoria(poblacionSize=sizePoblacion, profundidad=4)
     saveData(poblacion,"Inicial")
@@ -55,13 +57,16 @@ for i in range(limiteGeneraciones):
     sub_poblacion = comm.scatter(sub_poblaciones, root=0)
 
 poblacion_completa = comm.gather(sub_poblacion, root=0)
+
 if rank == 0:
+    print(value)
     # Concatenar todas las sublistas de poblacion_completa en una sola lista
     poblacionFinal = [ind for sublist in poblacion_completa for ind in sublist]
     # saveData(poblacionFinal,"Final")    
-    y_ = [poblacionFinal[i]['y_predict'] for i in range(len(poblacion[:10]))]
-    #numero random
-    num = np.random.randint(1000)
-    pintar(X,y,y_,f"Final_{num}")
+    y_ = [poblacionFinal[i]['y_predict'] for i in range(len(poblacionFinal[:10]))]
+
+    # saveData(poblacion, f"Final_{rank}_{value}")
+    graficar(X,y,f"{i}_{value}",fxs)
+    pintar(X,y,y_,f"Final_{value}")
     
 
