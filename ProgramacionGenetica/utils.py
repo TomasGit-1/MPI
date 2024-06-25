@@ -27,7 +27,7 @@ def graficar(X,y,name, expresion):
 def pintar(X,y,y_,name):
     colors = np.random.rand(len(y_), 3)
     plt.figure(figsize=(10, 6))
-    plt.plot(X,y, label='Funcion objectivo', color='r')
+    plt.plot(X,y,linestyle='--', label='Funcion objectivo', color='r')
     for i, (y, color) in enumerate(zip(y_, colors)):
         plt.plot(X, y, linestyle='-', color=color)
     plt.title('Gráfico de varias listas en el eje y con colores aleatorios')
@@ -47,7 +47,7 @@ def funciones():
         "f6":{"fx":"sin(X)+sin(X+X**2)","fitCases":np.linspace(0, 1, 20)},
         "f7":{"fx":"log(X+1)+log(X**2 +1)","fitCases":np.linspace(0, 2, 20)},
     }
-    return  regressionFunctions
+    return regressionFunctions
 
 def evaluar_expresion(expresion,X):
     try:
@@ -65,14 +65,12 @@ def normalize_list(lista):
    
 
 def generateObjectivo():
-    # np.random.seed(42)
     fxs = funciones()
     i = f"f{np.random.randint(1,6)}"
+    # i = f"f{np.random.randint(1,6)}"
     X = np.linspace(-1, 1, 20)
     y  = [ (evaluar_expresion(fxs[i]["fx"], x)) for x in X ]
-    # y = np.sin(X) + np.random.normal(0, 0.1, X.shape)
     minimo = min(y)
     maximo = max(y)
-    # y = [(x - minimo) / (maximo - minimo) for x in y]
     return X, y, fxs[i]["fx"]
 

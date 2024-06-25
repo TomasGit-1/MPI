@@ -5,11 +5,12 @@ import numpy as np
 import random
 import copy
 import math
+import warnings
 np.seterr(divide='ignore', invalid='ignore')
+warnings.filterwarnings('ignore', category=RuntimeWarning, module='numpy')
 
 class PGenetica:
     def __init__(self,X_true,y_true, operators=[],functions=[]):
-        print("Programacion Genetica")
         self.operators = operators
         self.variables = ["X"]
         self.functions = functions
@@ -85,7 +86,7 @@ class PGenetica:
             return  round( np.mean((y_true - y_pred) ** 2),4)
         except Exception as e:
             print("Error calcular_ecm" + str(e))
-            return -1
+            return 1.234e6 
     
     def MSE(y, y_):
         try:
@@ -96,7 +97,7 @@ class PGenetica:
             return round(mse / m, 2)
         except Exception as e:
             print("Error MSE" + str(e))
-            return -1
+            return 1.234e6 
     def seleccionarPadre(self,posiblePadres,poblacion):
         seleccion = random.randint(0, len(posiblePadres)-1)
         padres = posiblePadres[seleccion]
@@ -248,6 +249,6 @@ class PGenetica:
         try:
             return round(eval(expresion, {'sin': math.sin, 'cos': math.cos, 'tan': math.tan,"X": X , 'log' :math.log}),4 )
         except ZeroDivisionError:
-            return 0
+            return 1.234e6
         except Exception as e:
-            return 0
+            return 1.234e6
