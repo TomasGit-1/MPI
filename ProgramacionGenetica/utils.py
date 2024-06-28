@@ -4,6 +4,8 @@ import numpy as np
 import datetime
 import random
 import math
+import logging
+from colorlog import ColoredFormatter
 np.seterr(divide='ignore', invalid='ignore')
 
 
@@ -39,12 +41,12 @@ def pintar(X,y,y_,name):
 
 def funciones():
     regressionFunctions = {
-        "f1":{"fx":"X**3+X**2+X","fitCases":np.linspace(0, 10, 20)},
-        "f2":{"fx":"X**4+X**3+X**2+X","fitCases":np.linspace(0, 10, 20)},
-        "f3":{"fx":"X**5+X**4+X**3+X**2+X","fitCases":np.linspace(0, 1, 20)},
-        "f4":{"fx":"X**6+X**5+X**4+X**3+X**2+X","fitCases":np.linspace(0, 1, 20)},
-        "f5":{"fx":"sin(X**2)*cos(X)-1","fitCases":np.linspace(0, 1, 20)},
-        "f6":{"fx":"sin(X)+sin(X+X**2)","fitCases":np.linspace(0, 1, 20)},
+        "f1":{"fx":"X**3+X**2+X","fitCases":np.linspace(-1, 1, 5)},
+        "f2":{"fx":"X**4+X**3+X**2+X","fitCases":np.linspace(-1, 1, 20)},
+        "f3":{"fx":"X**5+X**4+X**3+X**2+X","fitCases":np.linspace(-1, 1, 20)},
+        "f4":{"fx":"X**6+X**5+X**4+X**3+X**2+X","fitCases":np.linspace(-1, 1, 20)},
+        "f5":{"fx":"sin(X**2)*cos(X)-1","fitCases":np.linspace(-1, 1, 20)},
+        "f6":{"fx":"sin(X)+sin(X+X**2)","fitCases":np.linspace(-1, 1, 20)},
         "f7":{"fx":"log(X+1)+log(X**2 +1)","fitCases":np.linspace(0, 2, 20)},
     }
     return regressionFunctions
@@ -66,11 +68,32 @@ def normalize_list(lista):
 
 def generateObjectivo():
     fxs = funciones()
-    i = f"f{np.random.randint(1,6)}"
     # i = f"f{np.random.randint(1,6)}"
-    X = np.linspace(-1, 1, 20)
+    i = f"f{1}"
+    X = fxs[i]["fitCases"]
     y  = [ (evaluar_expresion(fxs[i]["fx"], x)) for x in X ]
-    minimo = min(y)
-    maximo = max(y)
+  
     return X, y, fxs[i]["fx"]
 
+def generateLog():
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO) 
+
+    formatter = ColoredFormatter(
+        "%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(message)s",
+        datefmt=None,
+        reset=True,
+        log_colors={
+            'DEBUG':    'cyan',
+            'INFO':     'green',
+            'WARNING':  'yellow',
+            'ERROR':    'red',
+            'CRITICAL': 'red,bg_white',
+        },
+        secondary_log_colors={},
+        style='%'
+    )
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    return logger

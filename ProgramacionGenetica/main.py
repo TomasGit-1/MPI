@@ -1,34 +1,61 @@
-from  utils import saveData, graficar, generateObjectivo, pintar,normalize_list
+#Class and util
+from  utils import saveData, graficar, generateObjectivo, pintar,generateLog
 from PGenetica import PGenetica
+
+#Librerias
 import numpy as np
 import random
-import pandas as pd
+log = generateLog()
+
 sizePoblacion = 100
-limiteGeneraciones = 10
+limiteGeneraciones = 100
+X = None
+y = None
+objGenetica = None
+operators = ["+", "-", "*", "/","**"]
+functions = ["sin", "cos", "tan","log"]
+value = 0
 
+log.info("En el nodo 0 Generamos la funcion objectivo")
 value = np.random.randint(0, 200)
-print(f"#_{value}")
-X, y = generateObjectivo(value)
-operators = ["+", "-", "*", "/"]#**
-functions = ["sin", "cos","log"] #,"log"
+X, y, fxs= generateObjectivo()
 
-objGenetica = PGenetica(X, y,operators,functions )
+objGenetica = PGenetica(log, X, y,operators,functions)
+
+log.info("generando la poblacion")
+value = np.random.randint(0, 200)
 poblacion = objGenetica.generatePoblacionAleatoria(poblacionSize=sizePoblacion, profundidad=4)
-saveData(poblacion,f"Inicial_{value}")
 
+log.info("Generamos la sub poblaciones")
+
+#Enviamos a los nodos las subPoblaciones y recibimos la informacion
+log.warning("Enviamos a los nodos las subPoblaciones y recibimos la informacion")
+
+log.warning("Generando nuevao poblacion")
+
+nuevaGeneracion = poblacion
 for i in range(limiteGeneraciones):
-    print("Numero de generacion: " + str(i))
-    antiguaGeneracion = poblacion
-    NuevaGeneracion =objGenetica.generateGeneration(antiguaGeneracion)
-    """
-        Tomamso los mejores 50% de la Antigua Generacion y los 50% mejores de la nmueva generaion
-    """
-    poblacion = antiguaGeneracion[len(antiguaGeneracion)//2:] + NuevaGeneracion[len(NuevaGeneracion)//2:]
-    # # poblacion = sorted(poblacion, key=lambda x: x['mse'] if x['mse'] is not None else float('inf'))
-    poblacion = sorted(poblacion, key=lambda x: np.inf if x['mse'] is None or np.isnan(x['mse']) else x['mse'])
+    nuevaGeneracion = objGenetica.generateGeneration(nuevaGeneracion)
+    log.warning("Recibimos en el nodo 0 las genereaciones generadas")
+    # print("recibimos en el nodo 0 las genereaciones generadas")
+    # unimosPoblacion = [ind for sublist in nuevaGeneracion for ind in sublist]
+    nuevaGeneracion = objGenetica.ordenarPoblacion(nuevaGeneracion)
+    log.warning("Tomar los mejores 50% de la Antigua Generación y los 50% mejores de la Nueva Generación")
+    nuevaGeneracion = poblacion[:len(poblacion)//2] + nuevaGeneracion[:len(nuevaGeneracion)//2]
+    log.warning("Volvemos a ordenar")
+    nuevaGeneracion = objGenetica.ordenarPoblacion(nuevaGeneracion)
+    y_ = [nuevaGeneracion[i]['y_predict'] for i in range(len(nuevaGeneracion[:2]))]
 
-df = pd.DataFrame(poblacion)
-y_predict = [poblacion[i]['y_predict'] for i in range(len(poblacion[:5]))]
-# y_predict = [normalize_list(lista) for lista in y_predict]
-saveData(poblacion,f"Final_{value}") 
-pintar(X,y,y_predict,f"Final_{value}")
+    log.warning(f"MSE : {y_}")
+    # sub_poblaciones = poblacion
+    # numero_entero = random.randint(1, 100)
+
+
+log.info(f"Imagenen generada en {value}")
+# Concatenar todas las sublistas de poblacion_completa en una sola lista
+y_ = [nuevaGeneracion[i]['y_predict'] for i in range(len(nuevaGeneracion[:1]))]
+# log.info(f"Mejores {y_}")
+graficar(X,y,f"{i}_{value}",fxs)
+pintar(X,y,y_,f"Final_{value}")
+    
+
