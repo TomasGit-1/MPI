@@ -4,3 +4,4 @@ scikit-learn
 pandas
 matplotlib
 #source /home/add/Home/MPI/ProgramacionGenetica/path/to/venv/bin/activate
+#mpiexec -n 4 python mainMPI.py

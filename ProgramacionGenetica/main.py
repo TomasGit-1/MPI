@@ -18,7 +18,7 @@ value = 0
 
 log.info("En el nodo 0 Generamos la funcion objectivo")
 value = np.random.randint(0, 200)
-X, y, fxs, nf= generateObjectivo(num = 7)
+X, y, fxs, nf= generateObjectivo(num = 6)
 
 objGenetica = PGenetica(log, X, y,operators,functions)
 

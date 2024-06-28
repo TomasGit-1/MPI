@@ -31,7 +31,7 @@ class PGenetica:
             expresion,y_predict,mse,isValida = self.generateInfo(Tree)    
             poblacion.append({"tree":Tree, "expresion":expresion,"y_predict":y_predict,"mse":mse, "isValida":isValida})
             i+=1
-        self.log.debug(f"Poblacion generada {poblacion[0]}")
+        self.log.debug(f"Poblacion generada ")
         return poblacion
     
     def ordenarPoblacion(self, poblacion):
@@ -85,7 +85,7 @@ class PGenetica:
     
     def calcular_ecm(self, y_true,y_pred):
         try:
-            return round(np.mean(np.abs(np.array(y_true) - np.array(y_pred)) ** 2),6)
+            return round(np.mean(np.abs(np.array(y_true) - np.array(y_pred)) ** 2),4)
         except Exception as e:
             print("Error calcular_ecm " + str(e))
             return self.errorMseMax

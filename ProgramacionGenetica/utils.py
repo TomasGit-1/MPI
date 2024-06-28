@@ -10,7 +10,7 @@ np.seterr(divide='ignore', invalid='ignore')
 
 
 def saveData(poblacion,name):
-    df = pd.DataFrame(poblacion)
+    df = pd.DataFrame([poblacion])
     timeNow = datetime.datetime.now()
     numero_aleatorio = random.randint(0, 100)
     # now = timeNow.strftime('%H_%M_%SS')
