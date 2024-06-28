@@ -8,7 +8,8 @@ import math
 import warnings
 np.seterr(divide='ignore', invalid='ignore')
 warnings.filterwarnings('ignore', category=RuntimeWarning, module='numpy')
-
+warnings.filterwarnings("error", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=np.ComplexWarning)
 class PGenetica:
     def __init__(self,log, X_true,y_true, operators=[],functions=[]):
         self.log = log
@@ -19,7 +20,7 @@ class PGenetica:
         self.X_true = X_true
         self.y_true = y_true
         self.objTree = TreeC(self.operators, self.functions)
-        self.errorMseMax = 2.5e7
+        self.errorMseMax = 1.5e7
 
     def generatePoblacionAleatoria(self, poblacionSize = 4, profundidad=4):
         self.log.debug("Generando poblacion aleatoria")
@@ -34,7 +35,8 @@ class PGenetica:
         return poblacion
     
     def ordenarPoblacion(self, poblacion):
-        return sorted(poblacion, key=lambda x: x['mse'])
+        ordenada = sorted(poblacion, key=lambda x: x['mse'])
+        return ordenada
 
     
     def generateInfo(self, Tree):
@@ -83,7 +85,7 @@ class PGenetica:
     
     def calcular_ecm(self, y_true,y_pred):
         try:
-            return  np.mean((np.array(y_true) - np.array(y_pred)) ** 2)
+            return round(np.mean(np.abs(np.array(y_true) - np.array(y_pred)) ** 2),6)
         except Exception as e:
             print("Error calcular_ecm " + str(e))
             return self.errorMseMax

@@ -7,8 +7,8 @@ import numpy as np
 import random
 log = generateLog()
 
-sizePoblacion = 100
-limiteGeneraciones = 100
+sizePoblacion = 400
+limiteGeneraciones = 30
 X = None
 y = None
 objGenetica = None
@@ -18,7 +18,7 @@ value = 0
 
 log.info("En el nodo 0 Generamos la funcion objectivo")
 value = np.random.randint(0, 200)
-X, y, fxs= generateObjectivo()
+X, y, fxs, nf= generateObjectivo(num = 7)
 
 objGenetica = PGenetica(log, X, y,operators,functions)
 
@@ -34,7 +34,11 @@ log.warning("Enviamos a los nodos las subPoblaciones y recibimos la informacion"
 log.warning("Generando nuevao poblacion")
 
 nuevaGeneracion = poblacion
-for i in range(limiteGeneraciones):
+limite = 0.01
+mse = 10
+i = 0 
+cercano =None
+while mse > limite:
     nuevaGeneracion = objGenetica.generateGeneration(nuevaGeneracion)
     log.warning("Recibimos en el nodo 0 las genereaciones generadas")
     # print("recibimos en el nodo 0 las genereaciones generadas")
@@ -44,18 +48,17 @@ for i in range(limiteGeneraciones):
     nuevaGeneracion = poblacion[:len(poblacion)//2] + nuevaGeneracion[:len(nuevaGeneracion)//2]
     log.warning("Volvemos a ordenar")
     nuevaGeneracion = objGenetica.ordenarPoblacion(nuevaGeneracion)
-    y_ = [nuevaGeneracion[i]['y_predict'] for i in range(len(nuevaGeneracion[:2]))]
-
-    log.warning(f"MSE : {y_}")
-    # sub_poblaciones = poblacion
-    # numero_entero = random.randint(1, 100)
+    cercano = nuevaGeneracion[0]
+    mse = cercano["mse"]
+    log.warning(f"MSE generacion {i}: {mse}")
+    i += 1
 
 
 log.info(f"Imagenen generada en {value}")
-# Concatenar todas las sublistas de poblacion_completa en una sola lista
-y_ = [nuevaGeneracion[i]['y_predict'] for i in range(len(nuevaGeneracion[:1]))]
-# log.info(f"Mejores {y_}")
-graficar(X,y,f"{i}_{value}",fxs)
-pintar(X,y,y_,f"Final_{value}")
+y_ = cercano['y_predict']
+expresion = cercano['expresion']
+objectivo = fxs
+saveData(cercano,f"Final_{value}_{nf}") 
+pintar(X,y,y_,f"Final_{value}_{nf}", objectivo, expresion)
     
 

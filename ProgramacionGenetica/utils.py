@@ -26,13 +26,12 @@ def graficar(X,y,name, expresion):
     plt.grid(True)
     plt.savefig(f'graficas/{name}.png', format='png')
 
-def pintar(X,y,y_,name):
+def pintar(X,y,y_,name,objectivo, expresion):
     colors = np.random.rand(len(y_), 3)
     plt.figure(figsize=(10, 6))
-    plt.plot(X,y,linestyle='--', label='Funcion objectivo', color='r')
-    for i, (y, color) in enumerate(zip(y_, colors)):
-        plt.plot(X, y, linestyle='-', color=color)
-    plt.title('Gráfico de varias listas en el eje y con colores aleatorios')
+    plt.plot(X,y,linestyle='-', label=f'Funcion objectivo {objectivo}', color='r')
+    plt.plot(X, y_, linestyle='--',  label=f'Funcion objectivo {expresion}', color='blue', marker='o')
+    plt.title(f'Grafico')
     plt.xlabel('x')
     plt.ylabel('y')
     plt.grid(True)
@@ -41,7 +40,7 @@ def pintar(X,y,y_,name):
 
 def funciones():
     regressionFunctions = {
-        "f1":{"fx":"X**3+X**2+X","fitCases":np.linspace(-1, 1, 5)},
+        "f1":{"fx":"X**3+X**2+X","fitCases":np.linspace(-1, 1, 20)},
         "f2":{"fx":"X**4+X**3+X**2+X","fitCases":np.linspace(-1, 1, 20)},
         "f3":{"fx":"X**5+X**4+X**3+X**2+X","fitCases":np.linspace(-1, 1, 20)},
         "f4":{"fx":"X**6+X**5+X**4+X**3+X**2+X","fitCases":np.linspace(-1, 1, 20)},
@@ -66,14 +65,14 @@ def normalize_list(lista):
     return [(x - minimo) / (maximo - minimo) if (maximo - minimo) != 0 else 0 for x in lista]   
    
 
-def generateObjectivo():
+def generateObjectivo(num):
     fxs = funciones()
     # i = f"f{np.random.randint(1,6)}"
-    i = f"f{1}"
+    i = f"f{num}"
     X = fxs[i]["fitCases"]
     y  = [ (evaluar_expresion(fxs[i]["fx"], x)) for x in X ]
   
-    return X, y, fxs[i]["fx"]
+    return X, y, fxs[i]["fx"], i
 
 def generateLog():
     logger = logging.getLogger()
