@@ -25,7 +25,7 @@ operators = ["+", "-", "*", "/","**"]
 functions = ["sin", "cos", "tan","log"]
 value = 0
 limite = 0.01
-funcioN = 6
+funcioN = 7
 if rank == 0:
     log.info("En el nodo 0 Generamos la funcion objectivo")
     value = np.random.randint(0, 10000)

@@ -162,19 +162,14 @@ class PGenetica:
     def generateMuta(self,Tree):
         try:
             mutaTree = copy.deepcopy(Tree)
-            # self.log.error(mutaTree)
             if mutaTree.size >3:
                 value = "X"
                 nodeS = None
                 while value == "X":
                     nodeS = self.seleccionNode(mutaTree)
-                    # self.log.error(f"Size {mutaTree.size}" )
                     value = nodeS[1].value
                     if value != "X":
                         break 
-                # self.log.error(value)
-
-
                 temp = None        
                 #Verficamos si esl valor es un numero un operador o una funcion
                 if value.isdigit():
@@ -190,7 +185,6 @@ class PGenetica:
                 mutaTree[nodeS[0]].value = nuevoValue
             return mutaTree
         except Exception as e:
-            # self.log.error(f"Error en generar muta {e}" )
             return mutaTree
     
     def validarTipo(self, valueN1, valueN2):
